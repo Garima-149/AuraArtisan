@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA ARTISAN - Luxury Handcrafted Art & Custom Portraits Marketplace</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- React & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              alabaster: '#FAF8F5',
+              parchment: '#F4EFEA',
+              stone: {
+                50: '#FAF8F5',
+                100: '#F5F2EC',
+                200: '#E7E2D8',
+                300: '#D5CDBF',
+                700: '#44403C',
+                800: '#292524',
+                900: '#1C1917',
+              },
+              terracotta: {
+                DEFAULT: '#B45309',
+                light: '#D97706',
+                dark: '#92400E',
+                soft: '#FEF3C7',
+              },
+              ochre: '#C2410C',
+            },
+            fontFamily: {
+              serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #FAF8F5;
+        color: #1C1917;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        overflow-x: hidden;
+      }
+      .font-serif {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+      }
+      /* Custom smooth scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F4EFEA;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D5CDBF;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #B45309;
+      }
+      .art-gradient-1 { background: linear-gradient(135deg, #2D2724 0%, #6B4E3D 50%, #B45309 100%); }
+      .art-gradient-2 { background: linear-gradient(135deg, #1E293B 0%, #3B82F6 50%, #93C5FD 100%); }
+      .art-gradient-3 { background: linear-gradient(135deg, #451A03 0%, #92400E 50%, #F59E0B 100%); }
+      .art-gradient-4 { background: linear-gradient(135deg, #064E3B 0%, #047857 50%, #A7F3D0 100%); }
+      .art-gradient-5 { background: linear-gradient(135deg, #312E81 0%, #4338CA 50%, #C7D2FE 100%); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useMemo } = React;
+
+      // --- SVG Helper Icon Components ---
+      const IconSearch = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      );
+      const IconBag = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      );
+      const IconHeart = ({ className="w-5 h-5", filled=false }) => (
+        <svg className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+      );
+      const IconPlus = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+      );
+      const IconX = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      );
+      const IconMapPin = ({ className="w-4 h-4" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      );
+      const IconSparkles = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+      );
+      const IconShieldCheck = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      );
+      const IconPalette = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M7 21a4 4 0 01-4-4c0-1.38 1.07-2.61 2.37-2.92a5.98 5.98 0 004.8-5.88A6 6 0 1118 10c0 4.42-3.58 8-8 8h-1a2 2 0 00-2 2v1z"/></svg>
+      );
+      const IconCheck = ({ className="w-5 h-5" }) => (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+      );
+
+      // --- INITIAL ARTWORKS SEED DATA ---
+      const INITIAL_ARTWORKS = [
+        {
+          id: 'art-1',
+          title: "The Golden Ghats at Dawn",
+          artist: "Rameshwar Sharma",
+          location: "Varanasi, India",
+          category: "paintings",
+          priceINR: 45000,
+          medium: "Oil & 24K Gold Leaf on Canvas",
+          dimensions: "36\" x 48\"",
+          year: "2024",
+          story: "Created over 45 days along the historic Dashashwamedh Ghat. Features intricate hand-applied gold leaf capturing the sacred morning sunlight reflecting off river Ganges.",
+          craftsmanship: ["100% Hand-painted", "24K Gold Leaf", "Signed Original", "COA Included"],
+          artStyle: "gold-ghats",
+          featured: true,
+          artisanBio: "Master artisan with 28 years in traditional Benaras canvas impressionism. 4th generation painter."
+        },
+        {
+          id: 'art-2',
+          title: "Royal Marwari Miniature Portrait",
+          artist: "Meenakshi Rathore",
+          location: "Jaipur, Rajasthan",
+          category: "portraits",
+          priceINR: 32000,
+          medium: "Natural Pigments & Tempera on Handmade Paper",
+          dimensions: "18\" x 24\"",
+          year: "2024",
+          story: "Hand-ground lapis lazuli, malachite, and crushed river pearls rendered using traditional single-hair squirrel hair brushes following centuries-old Rajput palace art heritage.",
+          craftsmanship: ["Custom Commission Available", "Natural Pigments", "Single-Hair Detail"],
+          artStyle: "miniature-rajput",
+          featured: true,
+          artisanBio: "Awarded National Heritage Artisan status in Rajasthan for restoring royal court portraiture techniques."
+        },
+        {
+          id: 'art-3',
+          title: "Ancestral Barro Negro Sentinel Vessel",
+          artist: "Mateo & Elena Silva",
+          location: "Oaxaca, Mexico",
+          category: "sculptures",
+          priceINR: 18500,
+          medium: "Smoked Black Terracotta Pottery",
+          dimensions: "14\" H x 10\" W",
+          year: "2023",
+          story: "Hand-burnished using quartz stones and wood-pit fired in underground reduction chambers to produce a metallic obsidian luster without synthetic glazes.",
+          craftsmanship: ["Eco-friendly Clay", "Pit-Fired", "Quartz Burnished"],
+          artStyle: "terracotta-black",
+          featured: false,
+          artisanBio: "Preserving Zapotec clay sculpture traditions passed down through seven generations in San Bartolo Coyotepec."
+        },
+        {
+          id: 'art-4',
+          title: "Whispers of Kasai River Tapestry",
+          artist: "Sunita Devi & Guild",
+          location: "Madhubani, Bihar",
+          category: "textiles",
+          priceINR: 28000,
+          medium: "Handwoven Wild Tussar Silk & Natural Indigo",
+          dimensions: "40\" x 60\"",
+          year: "2024",
+          story: "Woven on traditional pit looms over three weeks. The rich indigo motifs portray ancient Madhubani folklore surrounding river ecology and harmony.",
+          craftsmanship: ["Pit-loom Handwoven", "Organic Indigo Dye", "Guild Fair-Trade"],
+          artStyle: "indigo-tapestry",
+          featured: true,
+          artisanBio: "Leader of a women's artisan collective supporting 40+ rural weavers in Mithila region."
+        },
+        {
+          id: 'art-5',
+          title: "Serenade in Chiaroscuro",
+          artist: "Giuseppe Moretti",
+          location: "Florence, Italy",
+          category: "paintings",
+          priceINR: 68000,
+          medium: "Venetian Plaster & Compressed Charcoal",
+          dimensions: "30\" x 40\"",
+          year: "2024",
+          story: "Multi-layered burnished plaster carefully etched and shaded with compressed willow charcoal to invoke classical Renaissance contrast and structural weight.",
+          craftsmanship: ["Architectural Texture", "Original One-of-a-kind"],
+          artStyle: "charcoal-plaster",
+          featured: false,
+          artisanBio: "Classical restorer and painter practicing techniques learned at Accademia delle Arti del Disegno."
+        },
+        {
+          id: 'art-6',
+          title: "Bespoke Charcoal Family Heirloom Portrait",
+          artist: "Ananya Sen",
+          location: "Kolkata, India",
+          category: "portraits",
+          priceINR: 22000,
+          medium: "Willow Charcoal & Graphite on 300gsm Archival Paper",
+          dimensions: "20\" x 26\"",
+          year: "2024",
+          story: "Custom portraiture crafted from your cherished family photograph memories. Preserving human warmth through precise tonal transitions.",
+          craftsmanship: ["Custom Commission", "Archival Cotton Paper", "Hyper-detailed"],
+          artStyle: "charcoal-portrait",
+          featured: true,
+          artisanBio: "Fine Arts gold medalist specializing in emotionally resonant figurative graphite and charcoal portraiture."
+        },
+        {
+          id: 'art-7',
+          title: "Chola Lost-Wax Bronze Nataraja",
+          artist: "Shanmugam Sthapathi",
+          location: "Swamimalai, Tamil Nadu",
+          category: "sculptures",
+          priceINR: 85000,
+          medium: "Hand-cast Lost-Wax Panchaloha Bronze",
+          dimensions: "22\" H x 16\" W",
+          year: "2024",
+          story: "Cast using ancient Cire Perdue (lost wax) methodology described in the Shilpa Shastras. Hand-chiselled over 200 hours to achieve pristine iconographic precision.",
+          craftsmanship: ["GI Tagged Craft", "Lost-Wax Cast", "Heirloom Grade"],
+          artStyle: "bronze-chola",
+          featured: false,
+          artisanBio: "Direct descendant of the master sculptors who crafted temple bronzes during the Great Chola Dynasty."
+        },
+        {
+          id: 'art-8',
+          title: "Botanical Double Ikat Silk Wall Art",
+          artist: "K. Veeresh",
+          location: "Pochampally, Telangana",
+          category: "textiles",
+          priceINR: 19500,
+          medium: "Pure Mulberry Silk & Plant Dyes",
+          dimensions: "24\" x 96\"",
+          year: "2024",
+          story: "Complex double ikat weave where both warp and weft yarns are meticulously tie-dyed prior to weaving to yield blurred soft-edge geometric flora.",
+          craftsmanship: ["Double Ikat Weave", "100% Mulberry Silk", "Vegetable Dyes"],
+          artStyle: "ikat-silk",
+          featured: false,
+          artisanBio: "Pochampally master weaver committed to keeping zero-chemical silk dyeing heritage alive."
+        }
+      ];
+
+      // --- DYNAMIC ARTWORK VISUAL RENDERER ---
+      const ArtworkCanvasVisual = ({ styleType, className="w-full h-full" }) => {
+        // High quality aesthetic SVG rendering for artworks
+        if (styleType === 'gold-ghats') {
+          return (
+            <svg className={`${className} bg-[#1C1714]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#241B15" />
+              <circle cx="200" cy="110" r="60" fill="#D97706" opacity="0.8" />
+              <circle cx="200" cy="110" r="45" fill="#F59E0B" />
+              <path d="M0 180 L400 180 L400 300 L0 300 Z" fill="#120D0A" />
+              {/* Temple Steeples / Ghats Silhouettes */}
+              <path d="M40 180 L60 120 L80 180 Z" fill="#3A2B20" />
+              <path d="M120 180 L145 95 L170 180 Z" fill="#4A372A" />
+              <path d="M230 180 L260 110 L290 180 Z" fill="#3A2B20" />
+              <path d="M330 180 L350 130 L370 180 Z" fill="#2A1E16" />
+              {/* River Reflections & Gold Foil details */}
+              <path d="M0 210 Q 100 200, 200 210 T 400 210" stroke="#F59E0B" strokeWidth="4" opacity="0.6" strokeDasharray="10 15" />
+              <path d="M0 235 Q 120 225, 240 235 T 400 235" stroke="#FBBF24" strokeWidth="3" opacity="0.8" strokeDasharray="15 20" />
+              <path d="M0 260 Q 80 250, 180 260 T 400 260" stroke="#D97706" strokeWidth="5" opacity="0.5" strokeDasharray="8 12" />
+              <circle cx="145" cy="90" r="3" fill="#FDE047" />
+            </svg>
+          );
+        }
+        if (styleType === 'miniature-rajput') {
+          return (
+            <svg className={`${className} bg-[#FAF3E0]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#FAF2E4" />
+              <rect x="20" y="20" width="360" height="260" fill="none" stroke="#B45309" strokeWidth="4" />
+              <rect x="28" y="28" width="344" height="244" fill="none" stroke="#D97706" strokeWidth="1" strokeDasharray="4 4" />
+              {/* Royal Arch */}
+              <path d="M80 270 V 130 Q 200 50, 320 130 V 270 Z" fill="#E8D8C3" stroke="#92400E" strokeWidth="2" />
+              {/* Royal Silhouette & Peacock Motif */}
+              <path d="M160 250 Q 200 160, 240 250 Z" fill="#B45309" />
+              <circle cx="200" cy="140" r="22" fill="#78350F" />
+              <path d="M185 125 Q 200 110, 215 125 L 200 135 Z" fill="#D97706" />
+              <circle cx="200" cy="200" r="35" fill="#047857" opacity="0.2" />
+            </svg>
+          );
+        }
+        if (styleType === 'terracotta-black') {
+          return (
+            <svg className={`${className} bg-[#1C1917]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#18181B" />
+              {/* Vessel Contour */}
+              <path d="M150 260 C140 180, 110 140, 150 80 C170 50, 230 50, 250 80 C290 140, 260 180, 250 260 Z" fill="#27272A" stroke="#52525B" strokeWidth="2" />
+              <ellipse cx="200" cy="70" rx="35" ry="12" fill="#3F3F46" stroke="#71717A" strokeWidth="2" />
+              <path d="M140 150 C180 160, 220 140, 260 150" stroke="#71717A" strokeWidth="3" opacity="0.4" strokeDasharray="3 6" />
+              {/* Sheen highlights */}
+              <path d="M165 95 Q 155 160, 175 235" stroke="#A1A1AA" strokeWidth="3" opacity="0.3" strokeLinecap="round" />
+            </svg>
+          );
+        }
+        if (styleType === 'indigo-tapestry') {
+          return (
+            <svg className={`${className} bg-[#0F172A]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#1E293B" />
+              <rect x="15" y="15" width="370" height="270" fill="none" stroke="#38BDF8" strokeWidth="2" opacity="0.3" />
+              {/* Loom Texture Lines */}
+              {Array.from({length: 15}).map((_, i) => (
+                <line key={i} x1={30 + i * 24} y1="30" x2={30 + i * 24} y2="270" stroke="#0284C7" strokeWidth="1" opacity="0.25" />
+              ))}
+              <path d="M50 150 Q 120 70, 200 150 T 350 150" stroke="#38BDF8" strokeWidth="4" fill="none" />
+              <path d="M50 170 Q 120 250, 200 170 T 350 170" stroke="#7DD3FC" strokeWidth="3" fill="none" opacity="0.7" />
+              <circle cx="200" cy="150" r="40" fill="none" stroke="#BAE6FD" strokeWidth="3" strokeDasharray="5 5" />
+            </svg>
+          );
+        }
+        if (styleType === 'charcoal-plaster') {
+          return (
+            <svg className={`${className} bg-[#E7E5E4]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#E7E5E4" />
+              {/* Scraped Texture */}
+              <path d="M30 40 Q 200 90, 370 30" stroke="#78716C" strokeWidth="8" opacity="0.3" strokeLinecap="round" />
+              <path d="M60 260 Q 220 200, 340 270" stroke="#44403C" strokeWidth="12" opacity="0.4" strokeLinecap="round" />
+              {/* Charcoal Silhouettes */}
+              <path d="M140 240 C 130 140, 200 90, 260 240 Z" fill="#292524" opacity="0.85" />
+              <circle cx="210" cy="100" r="30" fill="#1C1917" opacity="0.9" />
+              <line x1="80" y1="20" x2="320" y2="280" stroke="#A8A29E" strokeWidth="2" opacity="0.5" />
+            </svg>
+          );
+        }
+        if (styleType === 'charcoal-portrait') {
+          return (
+            <svg className={`${className} bg-[#F5F5F4]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#FAFAFA" />
+              <circle cx="200" cy="115" r="50" fill="#D6D3D1" opacity="0.5" />
+              {/* Portrait Outline Shading */}
+              <path d="M150 250 Q 200 170, 250 250 Z" fill="#44403C" opacity="0.8" />
+              <path d="M165 110 Q 200 70, 235 110 Q 200 160, 165 110 Z" fill="#292524" opacity="0.7" />
+              {/* Eyes & Detail accent */}
+              <circle cx="185" cy="110" r="4" fill="#1C1917" />
+              <circle cx="215" cy="110" r="4" fill="#1C1917" />
+              <path d="M190 135 Q 200 142, 210 135" stroke="#1C1917" strokeWidth="2" fill="none" />
+            </svg>
+          );
+        }
+        if (styleType === 'bronze-chola') {
+          return (
+            <svg className={`${className} bg-[#1C1917]`} viewBox="0 0 400 300" fill="none">
+              <rect width="400" height="300" fill="#1C1917" />
+              {/* Bronze Ring of Fire (Prabhamandala) */}
+              <circle cx="200" cy="150" r="95" stroke="#B45309" strokeWidth="8" fill="none" />
+              <circle cx="200" cy="150" r="82" stroke="#F59E0B" strokeWidth="3" strokeDasharray="6 8" fill="none" />
+              {/* Dancing Deity Stance */}
+              <path d="M200 85 L200 200 L170 240 M200 200 L235 245" stroke="#D97706" strokeWidth="6" strokeLinecap="round" />
+              <path d="M140 140 L260 140" stroke="#D97706" strokeWidth="5" strokeLinecap="round" />
+              <circle cx="200" cy="80" r="14" fill="#F59E0B" />
+              <rect x="150" y="245" width="100" height="15" rx="3" fill="#78350F" />
+            </svg>
+          );
+        }
+        // Fallback default ikat silk style
+        return (
+          <svg className={`${className} bg-[#FEF3C7]`} viewBox="0 0 400 300" fill="none">
+            <rect width="400" height="300" fill="#FEF3C7" />
+            <path d="M0 50 L400 250 M0 250 L400 50" stroke="#B45309" strokeWidth="15" opacity="0.2" />
+            <circle cx="200" cy="150" r="70" fill="none" stroke="#C2410C" strokeWidth="4" />
+            <path d="M150 150 L250 150 M200 100 L200 200" stroke="#B45309" strokeWidth="3" />
+          </svg>
+        );
+      };
+
+      // --- MAIN APP COMPONENT ---
+      function App() {
+        // Core States
+        const [artworks, setArtworks] = useState(INITIAL_ARTWORKS);
+        const [currency, setCurrency] = useState('INR'); // 'INR' or 'USD'
+        const [selectedCategory, setSelectedCategory] = useState('all');
+        const [searchQuery, setSearchQuery] = useState('');
+        const [sortBy, setSortBy] = useState('featured');
+        const [wishlist, setWishlist] = useState([]);
+        const [cart, setCart] = useState([]);
+        
+        // Modals & Drawers
+        const [selectedArtwork, setSelectedArtwork] = useState(null); // Detail Modal
+        const [isCartOpen, setIsCartOpen] = useState(false);
+        const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+        const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+        const [commissionArtist, setCommissionArtist] = useState(null);
+        const [toastMessage, setToastMessage] = useState(null);
+        
+        // Checkout flow state inside Cart drawer
+        const [checkoutStep, setCheckoutStep] = useState('cart'); // 'cart', 'checkout', 'success'
+        const [buyerInfo, setBuyerInfo] = useState({ name: '', email: '', address: '', note: '' });
+
+        // Toast trigger helper
+        const showToast = (msg) => {
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 3500);
+        };
+
+        // Currency Formatter Helper
+        const formatPrice = (priceINR) => {
+          if (currency === 'USD') {
+            const usd = Math.round(priceINR / 83);
+            return `$${usd.toLocaleString('en-US')}`;
+          }
+          return `₹${priceINR.toLocaleString('en-IN')}`;
+        };
+
+        // Filtered & Sorted Artworks Calculation
+        const filteredArtworks = useMemo(() => {
+          return artworks.filter(item => {
+            const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+            const matchesSearch = searchQuery === '' || 
+              item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.medium.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.location.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+          }).sort((a, b) => {
+            if (sortBy === 'price-low') return a.priceINR - b.priceINR;
+            if (sortBy === 'price-high') return b.priceINR - a.priceINR;
+            if (sortBy === 'featured') return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+            return 0;
+          });
+        }, [artworks, selectedCategory, searchQuery, sortBy]);
+
+        // Cart Logic
+        const addToCart = (artwork, e) => {
+          if (e) e.stopPropagation();
+          setCart(prev => {
+            const existing = prev.find(i => i.id === artwork.id);
+            if (existing) {
+              return prev.map(i => i.id === artwork.id ? { ...i, qty: i.qty + 1 } : i);
+            }
+            return [...prev, { ...artwork, qty: 1 }];
+          });
+          showToast(`"${artwork.title}" added to your collection cart`);
+        };
+
+        const updateCartQty = (id, delta) => {
+          setCart(prev => prev.map(item => {
+            if (item.id === id) {
+              const newQty = item.qty + delta;
+              return newQty > 0 ? { ...item, qty: newQty } : null;
+            }
+            return item;
+          }).filter(Boolean));
+        };
+
+        const removeFromCart = (id) => {
+          setCart(prev => prev.filter(item => item.id !== id));
+        };
+
+        const cartSubtotalINR = useMemo(() => {
+          return cart.reduce((sum, item) => sum + (item.priceINR * item.qty), 0);
+        }, [cart]);
+
+        const toggleWishlist = (id, e) => {
+          if (e) e.stopPropagation();
+          setWishlist(prev => {
+            const exists = prev.includes(id);
+            if (exists) {
+              showToast("Removed from your saved curation");
+              return prev.filter(i => i !== id);
+            } else {
+              showToast("Saved to your favorites");
+              return [...prev, id];
+            }
+          });
+        };
+
+        // Sell Your Craft submission handler
+        const handleListNewArtwork = (newArt) => {
+          const createdArt = {
+            id: `art-${Date.now()}`,
+            ...newArt,
+            year: new Date().getFullYear().toString(),
+            craftsmanship: ["100% Artisan Handmade", "Direct From Creator", "Signed Original"],
+            featured: true
+          };
+          setArtworks(prev => [createdArt, ...prev]);
+          setIsSellModalOpen(false);
+          showToast(`Congratulations! "${createdArt.title}" is now live on the marketplace gallery.`);
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-900 selection:bg-terracotta selection:text-white">
+            
+            {/* --- TOP ANNOUNCEMENT BANNER --- */}
+            <div className="bg-stone-900 text-stone-200 text-xs py-2 px-4 text-center tracking-widest font-sans uppercase flex justify-between items-center px-6 border-b border-stone-800">
+              <span className="hidden sm:inline">Empowering Independent Painters & Master Craftsmen</span>
+              <span className="mx-auto sm:mx-0 font-medium text-amber-200">
+                ✨ Direct-to-Artisan Platform — 92% of Proceeds Go Directly to Creators
+              </span>
+              <div className="hidden md:flex items-center space-x-3 text-stone-400">
+                <span>Authenticity Guaranteed</span>
+                <span>•</span>
+                <span>Worldwide Shipping</span>
+              </div>
+            </div>
+
+            {/* --- NAVIGATION BAR --- */}
+            <header className="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-stone-200 transition-all">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                {/* Brand Logo */}
+                <div className="flex items-center space-x-3">
+                  <a href="#" className="group flex items-center space-x-2">
+                    <div className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center text-amber-100 font-serif text-xl border border-terracotta/40 group-hover:scale-105 transition-transform">
+                      A
+                    </div>
+                    <div>
+                      <span className="font-serif text-2xl tracking-tight text-stone-900 font-bold block leading-none">
+                        AURA ARTISAN
+                      </span>
+                      <span className="text-[10px] tracking-widest uppercase font-sans text-stone-500 block mt-1">
+                        Bespoke Heritage Gallery
+                      </span>
+                    </div>
+                  </a>
+                </div>
+
+                {/* Main Nav Category Links */}
+                <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium text-stone-700">
+                  <button 
+                    onClick={() => { setSelectedCategory('all'); document.getElementById('marketplace-grid')?.scrollIntoView({behavior:'smooth'}); }} 
+                    className={`hover:text-terracotta transition-colors ${selectedCategory === 'all' ? 'text-terracotta font-semibold' : ''}`}
+                  >
+                    All Collections
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedCategory('paintings'); document.getElementById('marketplace-grid')?.scrollIntoView({behavior:'smooth'}); }} 
+                    className={`hover:text-terracotta transition-colors ${selectedCategory === 'paintings' ? 'text-terracotta font-semibold' : ''}`}
+                  >
+                    Fine Paintings
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedCategory('portraits'); document.getElementById('marketplace-grid')?.scrollIntoView({behavior:'smooth'}); }} 
+                    className={`hover:text-terracotta transition-colors ${selectedCategory === 'portraits' ? 'text-terracotta font-semibold' : ''}`}
+                  >
+                    Custom Portraits
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedCategory('sculptures'); document.getElementById('marketplace-grid')?.scrollIntoView({behavior:'smooth'}); }} 
+                    className={`hover:text-terracotta transition-colors ${selectedCategory === 'sculptures' ? 'text-terracotta font-semibold' : ''}`}
+                  >
+                    Sculptures & Pottery
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedCategory('textiles'); document.getElementById('marketplace-grid')?.scrollIntoView({behavior:'smooth'}); }} 
+                    className={`hover:text-terracotta transition-colors ${selectedCategory === 'textiles' ? 'text-terracotta font-semibold' : ''}`}
+                  >
+                    Handwoven & Woodcraft
+                  </button>
+                </nav>
+
+                {/* Right Action Icons & Buttons */}
+                <div className="flex items-center space-x-4 sm:space-x-6">
+                  
+                  {/* Currency Switcher */}
+                  <div className="flex items-center bg-stone-200/60 p-1 rounded-full text-xs font-semibold text-stone-700">
+                    <button 
+                      onClick={() => setCurrency('INR')}
+                      className={`px-2.5 py-1 rounded-full transition-all ${currency === 'INR' ? 'bg-stone-900 text-amber-100 shadow-sm' : 'hover:text-stone-900'}`}
+                    >
+                      ₹ INR
+                    </button>
+                    <button 
+                      onClick={() => setCurrency('USD')}
+                      className={`px-2.5 py-1 rounded-full transition-all ${currency === 'USD' ? 'bg-stone-900 text-amber-100 shadow-sm' : 'hover:text-stone-900'}`}
+                    >
+                      $ USD
+                    </button>
+                  </div>
+
+                  {/* Sell Your Craft CTA Button */}
+                  <button 
+                    onClick={() => setIsSellModalOpen(true)}
+                    className="hidden sm:flex items-center space-x-1.5 px-4 py-2 rounded-full border border-terracotta text-terracotta text-xs font-semibold hover:bg-terracotta hover:text-white transition-all shadow-sm"
+                  >
+                    <IconPlus className="w-4 h-4" />
+                    <span>Sell Your Craft</span>
+                  </button>
+
+                  {/* Cart Drawer Toggle Icon */}
+                  <button 
+                    onClick={() => { setIsCartOpen(true); setCheckoutStep('cart'); }}
+                    className="relative p-2 text-stone-800 hover:text-terracotta transition-colors"
+                    aria-label="View Cart"
+                  >
+                    <IconBag className="w-6 h-6" />
+                    {cart.reduce((a, b) => a + b.qty, 0) > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-terracotta text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
+                        {cart.reduce((a, b) => a + b.qty, 0)}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </header>
+
+            {/* --- HERO SHOWCASE SECTION --- */}
+            <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-stone-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                  
+                  {/* Left Column Text Content */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-amber-100/70 border border-amber-300/50 text-terracotta-dark text-xs font-semibold tracking-wide">
+                      <IconSparkles className="w-4 h-4 text-terracotta" />
+                      <span>Bridging Artisans & Global Art Collectors</span>
+                    </div>
+
+                    <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-[1.15] text-stone-900 tracking-tight">
+                      Preserving Human Craftsmanship in an Automated World.
+                    </h1>
+
+                    <p className="text-base sm:text-lg text-stone-600 max-w-2xl leading-relaxed font-sans">
+                      Discover handcrafted oil paintings, bespoke heritage portraits, Zapotec black clay ceramics, and master loom textiles. Directly empowering traditional artisans without middleman markups.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-4 pt-4">
+                      <button 
+                        onClick={() => document.getElementById('marketplace-grid')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="px-8 py-3.5 bg-stone-900 text-amber-50 rounded-full font-medium hover:bg-terracotta transition-all shadow-md hover:shadow-lg text-sm tracking-wide"
+                      >
+                        Explore Curated Works
+                      </button>
+                      <button 
+                        onClick={() => setIsSellModalOpen(true)}
+                        className="px-8 py-3.5 bg-transparent border border-stone-800 text-stone-900 rounded-full font-medium hover:bg-stone-200/50 transition-all text-sm tracking-wide"
+                      >
+                        Join as an Artisan
+                      </button>
+                    </div>
+
+                    {/* Highlights stats row */}
+                    <div className="pt-8 grid grid-cols-3 gap-6 border-t border-stone-200 max-w-lg">
+                      <div>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">100%</div>
+                        <div className="text-xs text-stone-500 uppercase tracking-wider mt-1">Authentic Handmade</div>
+                      </div>
+                      <div>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-terracotta">92%</div>
+                        <div className="text-xs text-stone-500 uppercase tracking-wider mt-1">Direct Creator Payout</div>
+                      </div>
+                      <div>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">4.9★</div>
+                        <div className="text-xs text-stone-500 uppercase tracking-wider mt-1">Collector Rating</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column Featured Visual Collage */}
+                  <div className="lg:col-span-5 relative">
+                    <div className="relative mx-auto max-w-md lg:max-w-none">
+                      
+                      {/* Featured Artwork Preview Card */}
+                      <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-stone-200 bg-white p-3 group">
+                        <div className="aspect-[4/3] rounded-xl overflow-hidden relative">
+                          <ArtworkCanvasVisual styleType="gold-ghats" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                          <div className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-amber-100 text-[10px] uppercase font-semibold tracking-widest px-2.5 py-1 rounded">
+                            Editor's Choice
+                          </div>
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-serif text-xl font-bold text-stone-900">The Golden Ghats at Dawn</h3>
+                              <p className="text-xs text-stone-500 flex items-center mt-0.5">
+                                <IconMapPin className="mr-1 text-terracotta" /> Rameshwar Sharma • Varanasi, India
+                              </p>
+                            </div>
+                            <span className="font-serif text-lg font-bold text-terracotta">
+                              {formatPrice(45000)}
+                            </span>
+                          </div>
+                          <button 
+                            onClick={() => setSelectedArtwork(artworks[0])}
+                            className="w-full mt-2 py-2 bg-stone-100 hover:bg-stone-900 hover:text-white rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            View Artisan Story & Artwork Details
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Floating Badge */}
+                      <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-xl p-4 border border-stone-200 hidden sm:flex items-center space-x-3 max-w-xs">
+                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-terracotta">
+                          <IconShieldCheck className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-stone-900">Physical Certificate of Authenticity</div>
+                          <div className="text-[11px] text-stone-500">Every piece is signed & serialized by the artist.</div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </section>
+
+            {/* --- MISSION STATEMENT & MARKETPLACE GAP CALLOUT --- */}
+            <section className="py-16 bg-stone-900 text-stone-100">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                  <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/60 space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-terracotta/20 flex items-center justify-center text-amber-400 mx-auto md:mx-0">
+                      <IconPalette className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-serif text-xl font-semibold text-amber-100">The Artisan Gap</h3>
+                    <p className="text-xs text-stone-300 leading-relaxed">
+                      Traditional fine artists and handicraft masters often lose up to 60% of their earnings to middlemen gallery fees and corporate reseller margins.
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/60 space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-terracotta/20 flex items-center justify-center text-amber-400 mx-auto md:mx-0">
+                      <IconSparkles className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-serif text-xl font-semibold text-amber-100">Direct Patronage</h3>
+                    <p className="text-xs text-stone-300 leading-relaxed">
+                      Aura Artisan creates a transparent, direct collector-to-creator ecosystem. 92% of the artwork price goes straight to the creator's bank account.
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/60 space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-terracotta/20 flex items-center justify-center text-amber-400 mx-auto md:mx-0">
+                      <IconShieldCheck className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-serif text-xl font-semibold text-amber-100">Bespoke Commissions</h3>
+                    <p className="text-xs text-stone-300 leading-relaxed">
+                      Commission custom family portraits, personal oil paintings, or bespoke woven textiles directly from world-renowned traditional artists.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* --- MARKETPLACE GALLERY GRID & FILTERS --- */}
+            <main id="marketplace-grid" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex-1 w-full">
+              
+              {/* Header Title */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-stone-200 gap-4">
+                <div>
+                  <span className="text-xs font-semibold tracking-widest text-terracotta uppercase">Curated Catalog</span>
+                  <h2 className="font-serif text-3xl sm:text-4xl font-normal text-stone-900 mt-1">Explore Masterpieces</h2>
+                </div>
+                
+                {/* Search Bar Input */}
+                <div className="relative max-w-xs w-full">
+                  <input 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search artist, title, or medium..."
+                    className="w-full pl-10 pr-4 py-2 bg-stone-100 border border-stone-300 rounded-full text-xs text-stone-900 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta transition-all"
+                  />
+                  <div className="absolute left-3.5 top-2.5 text-stone-400">
+                    <IconSearch className="w-4 h-4" />
+                  </div>
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-2.5 text-stone-400 hover:text-stone-700">
+                      <IconX className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Category Navigation Pills & Sort Filter Dropdown */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                
+                {/* Category Pills */}
+                <div className="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto scrollbar-none">
+                  {[
+                    { id: 'all', label: 'All Works' },
+                    { id: 'paintings', label: 'Paintings' },
+                    { id: 'portraits', label: 'Custom Portraits' },
+                    { id: 'sculptures', label: 'Sculptures & Pottery' },
+                    { id: 'textiles', label: 'Handwoven & Woodcraft' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSelectedCategory(tab.id)}
+                      className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                        selectedCategory === tab.id
+                          ? 'bg-stone-900 text-amber-50 shadow-sm'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200/70 hover:text-stone-900'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sort dropdown */}
+                <div className="flex items-center space-x-3 text-xs text-stone-600 self-end sm:self-auto">
+                  <span>Sort by:</span>
+                  <select 
+                    value={sortBy} 
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-stone-100 border border-stone-300 rounded-lg px-3 py-1.5 text-stone-800 font-medium focus:outline-none focus:border-terracotta"
+                  >
+                    <option value="featured">Featured Curations</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                  </select>
+                </div>
+
+              </div>
+
+              {/* ARTWORK CARDS GRID */}
+              {filteredArtworks.length === 0 ? (
+                <div className="text-center py-20 bg-stone-100/50 rounded-2xl border border-dashed border-stone-300">
+                  <IconPalette className="w-12 h-12 text-stone-400 mx-auto mb-3" />
+                  <h3 className="font-serif text-2xl text-stone-800">No masterpieces match your query</h3>
+                  <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">Try clearing search terms or browsing a different category.</p>
+                  <button 
+                    onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
+                    className="mt-4 px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-semibold"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {filteredArtworks.map((artwork) => {
+                    const isWishlisted = wishlist.includes(artwork.id);
+                    return (
+                      <div 
+                        key={artwork.id}
+                        onClick={() => setSelectedArtwork(artwork)}
+                        className="group bg-white rounded-2xl overflow-hidden border border-stone-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer transform hover:-translate-y-1"
+                      >
+                        {/* Artwork Visual Box */}
+                        <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+                          <ArtworkCanvasVisual 
+                            styleType={artwork.artStyle} 
+                            className="w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                          />
+                          
+                          {/* Wishlist Heart Button */}
+                          <button
+                            onClick={(e) => toggleWishlist(artwork.id, e)}
+                            className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-md text-stone-700 hover:text-terracotta hover:bg-white transition-all shadow-sm"
+                            aria-label="Wishlist"
+                          >
+                            <IconHeart className={`w-4 h-4 ${isWishlisted ? 'text-red-600 fill-red-600' : ''}`} />
+                          </button>
+
+                          {/* Category Badge */}
+                          <div className="absolute bottom-3 left-3 bg-stone-900/80 backdrop-blur-md text-amber-50 text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-md">
+                            {artwork.category}
+                          </div>
+                        </div>
+
+                        {/* Card Info Content */}
+                        <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                          <div>
+                            <div className="flex items-center text-stone-500 text-xs mb-1">
+                              <IconMapPin className="mr-1 text-terracotta w-3.5 h-3.5" />
+                              <span className="truncate">{artwork.artist} • {artwork.location}</span>
+                            </div>
+
+                            <h3 className="font-serif text-xl font-bold text-stone-900 group-hover:text-terracotta transition-colors line-clamp-1">
+                              {artwork.title}
+                            </h3>
+
+                            <p className="text-xs text-stone-500 mt-1 line-clamp-1">
+                              {artwork.medium}
+                            </p>
+                          </div>
+
+                          <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] text-stone-400 block uppercase font-medium">Price</span>
+                              <span className="font-serif text-lg font-bold text-stone-900">
+                                {formatPrice(artwork.priceINR)}
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={(e) => addToCart(artwork, e)}
+                              className="px-3.5 py-2 rounded-xl bg-stone-900 text-amber-50 hover:bg-terracotta text-xs font-semibold transition-all flex items-center space-x-1 shadow-sm"
+                            >
+                              <IconBag className="w-3.5 h-3.5" />
+                              <span>Add to Cart</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </main>
+
+            {/* --- FEATURED ARTISANS SPOTLIGHT SECTION --- */}
+            <section className="py-16 bg-stone-100 border-t border-b border-stone-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center max-w-2xl mx-auto mb-12">
+                  <span className="text-xs font-semibold tracking-widest text-terracotta uppercase">Heritage Masters</span>
+                  <h2 className="font-serif text-3xl sm:text-4xl font-normal text-stone-900 mt-1">Meet The Creators Behind The Craft</h2>
+                  <p className="text-xs sm:text-sm text-stone-600 mt-2">
+                    Every piece on Aura Artisan is handcrafted by master artisans who have preserved ancient techniques through decades of devotion.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {[
+                    {
+                      name: "Rameshwar Sharma",
+                      craft: "Benaras Oil & Gold Impressionism",
+                      location: "Varanasi, UP",
+                      experience: "28 Years Experience",
+                      quote: "When you hold my canvas, you hold the morning mist and golden bells of Varanasi's ancient river banks.",
+                      initials: "RS"
+                    },
+                    {
+                      name: "Meenakshi Rathore",
+                      craft: "Rajput Miniature Fine Tempera",
+                      location: "Jaipur, Rajasthan",
+                      experience: "Master Heritage Awardee",
+                      quote: "Single-hair squirrel brushes allow me to paint details invisible to the casual eye. It is pure meditation.",
+                      initials: "MR"
+                    },
+                    {
+                      name: "Mateo & Elena Silva",
+                      craft: "Zapotec Barro Negro Pottery",
+                      location: "Oaxaca, Mexico",
+                      experience: "7th Generation Potters",
+                      quote: "Our clay comes from the sacred hills of San Bartolo. Wood smoke gives each piece its unique obsidian sheen.",
+                      initials: "MS"
+                    }
+                  ].map((artisan, idx) => (
+                    <div key={idx} className="bg-white rounded-2xl p-6 border border-stone-200/80 shadow-sm flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 rounded-full bg-stone-900 text-amber-100 flex items-center justify-center font-serif text-lg font-bold border border-terracotta">
+                            {artisan.initials}
+                          </div>
+                          <div>
+                            <h3 className="font-serif text-lg font-bold text-stone-900">{artisan.name}</h3>
+                            <p className="text-xs text-terracotta font-medium">{artisan.craft}</p>
+                            <p className="text-[11px] text-stone-400 flex items-center mt-0.5">
+                              <IconMapPin className="mr-1 w-3 h-3" /> {artisan.location} • {artisan.experience}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="font-serif italic text-sm text-stone-700 bg-stone-50 p-4 rounded-xl border border-stone-100">
+                          "{artisan.quote}"
+                        </p>
+                      </div>
+
+                      <button 
+                        onClick={() => {
+                          setCommissionArtist(artisan.name);
+                          setIsCommissionModalOpen(true);
+                        }}
+                        className="mt-6 w-full py-2.5 border border-stone-800 text-stone-900 rounded-xl text-xs font-semibold hover:bg-stone-900 hover:text-white transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <IconSparkles className="w-4 h-4 text-terracotta" />
+                        <span>Commission Custom Work</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* --- ARTWORK DETAIL & ARTISAN STORY MODAL --- */}
+            {selectedArtwork && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm animate-fade-in">
+                <div 
+                  className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 flex flex-col md:flex-row relative overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close button */}
+                  <button 
+                    onClick={() => setSelectedArtwork(null)}
+                    className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 text-stone-700 hover:bg-stone-900 hover:text-white flex items-center justify-center transition-colors shadow-md"
+                  >
+                    <IconX className="w-5 h-5" />
+                  </button>
+
+                  {/* Left Side Visual Preview */}
+                  <div className="md:w-1/2 bg-stone-100 p-6 flex flex-col justify-between items-center min-h-[300px] md:min-h-full">
+                    <div className="w-full h-full rounded-2xl overflow-hidden shadow-inner relative flex items-center justify-center">
+                      <ArtworkCanvasVisual styleType={selectedArtwork.artStyle} className="w-full h-full min-h-[280px]" />
+                    </div>
+                    <div className="w-full mt-4 flex items-center justify-between text-xs text-stone-500 border-t border-stone-200/80 pt-3">
+                      <span>Dimensions: <strong>{selectedArtwork.dimensions}</strong></span>
+                      <span>Year: <strong>{selectedArtwork.year}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Right Side Info & Artisan Story */}
+                  <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-between space-y-6">
+                    <div>
+                      <div className="flex items-center space-x-2 text-xs text-terracotta font-semibold uppercase tracking-wider mb-1">
+                        <IconSparkles className="w-3.5 h-3.5" />
+                        <span>{selectedArtwork.category}</span>
+                      </div>
+
+                      <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                        {selectedArtwork.title}
+                      </h2>
+
+                      {/* Artisan info box */}
+                      <div className="mt-3 p-3 bg-stone-50 rounded-xl border border-stone-200/60 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-stone-500">Master Craftsman</p>
+                          <p className="text-sm font-semibold text-stone-900">{selectedArtwork.artist}</p>
+                          <p className="text-[11px] text-stone-500">{selectedArtwork.location}</p>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setCommissionArtist(selectedArtwork.artist);
+                            setIsCommissionModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-amber-100 text-terracotta-dark hover:bg-terracotta hover:text-white rounded-lg text-xs font-semibold transition-colors"
+                        >
+                          Request Custom Commission
+                        </button>
+                      </div>
+
+                      {/* Medium & Story */}
+                      <div className="mt-5 space-y-3">
+                        <div>
+                          <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Medium & Technique</h4>
+                          <p className="text-sm font-medium text-stone-800">{selectedArtwork.medium}</p>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Artisan Story & Craftsmanship</h4>
+                          <p className="text-xs sm:text-sm text-stone-600 leading-relaxed mt-1">
+                            {selectedArtwork.story}
+                          </p>
+                        </div>
+
+                        {/* Craftsmanship Tags */}
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {selectedArtwork.craftsmanship?.map((tag, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-md text-[11px] font-medium border border-stone-200">
+                              ✓ {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Price & Action Button */}
+                    <div className="pt-4 border-t border-stone-200 space-y-3">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xs text-stone-500 uppercase font-medium">Artwork Investment</span>
+                        <span className="font-serif text-3xl font-bold text-stone-900">
+                          {formatPrice(selectedArtwork.priceINR)}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={(e) => {
+                            addToCart(selectedArtwork, e);
+                            setSelectedArtwork(null);
+                            setIsCartOpen(true);
+                          }}
+                          className="flex-1 py-3.5 bg-stone-900 hover:bg-terracotta text-amber-50 rounded-xl font-semibold text-xs tracking-wide transition-all shadow-md flex items-center justify-center space-x-2"
+                        >
+                          <IconBag className="w-4 h-4" />
+                          <span>Acquire Artwork</span>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- "SELL YOUR CRAFT" ARTISAN PORTAL MODAL --- */}
+            {isSellModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm animate-fade-in">
+                <div 
+                  className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200 p-6 md:p-8 relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button 
+                    onClick={() => setIsSellModalOpen(false)}
+                    className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-900 hover:text-white flex items-center justify-center transition-colors"
+                  >
+                    <IconX className="w-4 h-4" />
+                  </button>
+
+                  <div className="mb-6">
+                    <span className="text-xs font-semibold tracking-widest text-terracotta uppercase">Artisan Portal</span>
+                    <h2 className="font-serif text-3xl font-bold text-stone-900 mt-1">List Your Handcrafted Work</h2>
+                    <p className="text-xs text-stone-500 mt-1">
+                      Join our global marketplace. List your paintings, custom portrait services, or handmade artifacts with zero listing fees.
+                    </p>
+                  </div>
+
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      handleListNewArtwork({
+                        title: formData.get('title'),
+                        artist: formData.get('artist'),
+                        location: formData.get('location'),
+                        category: formData.get('category'),
+                        priceINR: Number(formData.get('priceINR')),
+                        medium: formData.get('medium'),
+                        dimensions: formData.get('dimensions'),
+                        story: formData.get('story'),
+                        artStyle: formData.get('artStyle') || 'gold-ghats'
+                      });
+                    }}
+                    className="space-y-4 text-xs"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Artwork Title *</label>
+                        <input required name="title" placeholder="e.g. Autumn Sunrise over Hampi" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Your Name (Artisan/Painter) *</label>
+                        <input required name="artist" placeholder="e.g. Priya Sundaram" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Origin Location *</label>
+                        <input required name="location" placeholder="e.g. Mysuru, Karnataka" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Category *</label>
+                        <select name="category" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta">
+                          <option value="paintings">Paintings</option>
+                          <option value="portraits">Custom Portraits</option>
+                          <option value="sculptures">Sculptures & Pottery</option>
+                          <option value="textiles">Handwoven & Woodcraft</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Price (₹ INR) *</label>
+                        <input required type="number" name="priceINR" placeholder="25000" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Medium / Materials *</label>
+                        <input required name="medium" placeholder="e.g. Acrylic & Silk Thread" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-stone-700 mb-1">Dimensions *</label>
+                        <input required name="dimensions" placeholder="e.g. 24 x 36 inches" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Artwork Visual Style Generator Preset *</label>
+                      <select name="artStyle" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta">
+                        <option value="gold-ghats">Gold Leaf & Warm Sunset Impressionism</option>
+                        <option value="miniature-rajput">Heritage Miniature Fine Art Border</option>
+                        <option value="terracotta-black">Obsidian Pottery & Terracotta Sheen</option>
+                        <option value="indigo-tapestry">Indigo Loom Organic Weave Motif</option>
+                        <option value="charcoal-portrait">Charcoal Fine Line Portrait Sketch</option>
+                        <option value="bronze-chola">Panchaloha Bronze Glow Motif</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Story & Craftsmanship Technique *</label>
+                      <textarea required name="story" rows="3" placeholder="Describe the heritage techniques, materials, hours spent, or emotional inspiration behind this work..." className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta"></textarea>
+                    </div>
+
+                    <div className="pt-4 flex items-center justify-end space-x-3 border-t border-stone-200">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsSellModalOpen(false)}
+                        className="px-5 py-2.5 rounded-xl border border-stone-300 font-semibold text-stone-600 hover:bg-stone-100"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="px-6 py-2.5 bg-stone-900 text-amber-50 rounded-xl font-semibold hover:bg-terracotta transition-all shadow-md"
+                      >
+                        Publish Artwork Live
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* --- CUSTOM COMMISSION MODAL --- */}
+            {isCommissionModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm animate-fade-in">
+                <div 
+                  className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-stone-200 p-6 md:p-8 relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button 
+                    onClick={() => setIsCommissionModalOpen(false)}
+                    className="absolute top-6 right-6 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-900 hover:text-white flex items-center justify-center transition-colors"
+                  >
+                    <IconX className="w-4 h-4" />
+                  </button>
+
+                  <div className="mb-6">
+                    <span className="text-xs font-semibold tracking-widest text-terracotta uppercase">Bespoke Inquiry</span>
+                    <h2 className="font-serif text-2xl font-bold text-stone-900 mt-1">
+                      Commission {commissionArtist ? `with ${commissionArtist}` : 'a Custom Piece'}
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-1">
+                      Commission custom family portraits, oil paintings, or bespoke sculptures. Directly connect with master creators.
+                    </p>
+                  </div>
+
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setIsCommissionModalOpen(false);
+                      showToast(`Commission request sent to ${commissionArtist || 'the artisan'}! They will reach out within 24 hours.`);
+                    }}
+                    className="space-y-4 text-xs"
+                  >
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Your Full Name *</label>
+                      <input required placeholder="e.g. Vikramaditya Singh" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Email / Phone *</label>
+                      <input required type="email" placeholder="vikram@example.com" className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta" />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Type of Custom Work *</label>
+                      <select className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta">
+                        <option>Bespoke Family Portrait (Oil / Charcoal)</option>
+                        <option>Custom Architectural Painting</option>
+                        <option>Custom Sculptural Centerpiece</option>
+                        <option>Handwoven Tapestry (Custom Dimensions)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-stone-700 mb-1">Project Details & Vision *</label>
+                      <textarea required rows="3" placeholder="Describe photo references, color palette preferences, or specific size requirements..." className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:border-terracotta"></textarea>
+                    </div>
+
+                    <div className="pt-2 flex justify-end space-x-3">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsCommissionModalOpen(false)}
+                        className="px-4 py-2 rounded-xl border border-stone-300 font-semibold text-stone-600"
+                      >
+                        Close
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="px-6 py-2 bg-stone-900 text-amber-50 rounded-xl font-semibold hover:bg-terracotta transition-colors"
+                      >
+                        Send Commission Brief
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* --- SLIDE-OVER SHOPPING CART DRAWER --- */}
+            {isCartOpen && (
+              <div className="fixed inset-0 z-50 overflow-hidden bg-stone-900/60 backdrop-blur-sm">
+                <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+                  <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between border-l border-stone-200">
+                    
+                    {/* Drawer Header */}
+                    <div className="p-6 border-b border-stone-200 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <IconBag className="w-5 h-5 text-terracotta" />
+                        <h2 className="font-serif text-xl font-bold text-stone-900">Your Collection Cart</h2>
+                      </div>
+                      <button 
+                        onClick={() => setIsCartOpen(false)}
+                        className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500"
+                      >
+                        <IconX className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Drawer Body content depends on checkout step */}
+                    <div className="p-6 flex-1 overflow-y-auto">
+                      {checkoutStep === 'cart' && (
+                        <div>
+                          {cart.length === 0 ? (
+                            <div className="text-center py-16 text-stone-500 space-y-3">
+                              <IconBag className="w-12 h-12 stroke-1 mx-auto text-stone-300" />
+                              <p className="font-serif text-lg text-stone-800">Your cart is currently empty</p>
+                              <p className="text-xs">Explore our curated gallery and empower independent artisans.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {cart.map((item) => (
+                                <div key={item.id} className="flex items-center space-x-4 p-3 rounded-xl border border-stone-200 bg-stone-50/50">
+                                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-stone-200 flex-shrink-0">
+                                    <ArtworkCanvasVisual styleType={item.artStyle} className="w-full h-full" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-serif text-sm font-bold text-stone-900 truncate">{item.title}</h4>
+                                    <p className="text-[11px] text-stone-500 truncate">By {item.artist}</p>
+                                    <p className="text-xs font-bold text-terracotta mt-1">{formatPrice(item.priceINR)}</p>
+                                  </div>
+
+                                  {/* Qty controls */}
+                                  <div className="flex items-center space-x-2 bg-white px-2 py-1 rounded-lg border border-stone-200">
+                                    <button onClick={() => updateCartQty(item.id, -1)} className="text-xs font-bold px-1 text-stone-600 hover:text-stone-900">-</button>
+                                    <span className="text-xs font-semibold">{item.qty}</span>
+                                    <button onClick={() => updateCartQty(item.id, 1)} className="text-xs font-bold px-1 text-stone-600 hover:text-stone-900">+</button>
+                                  </div>
+
+                                  <button onClick={() => removeFromCart(item.id)} className="text-stone-400 hover:text-red-600">
+                                    <IconX className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+
+                              {/* Direct Artisan Payout Transparency Breakdown */}
+                              <div className="mt-6 p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl space-y-2">
+                                <div className="flex items-center space-x-2 text-xs font-bold text-terracotta-dark">
+                                  <IconShieldCheck className="w-4 h-4 text-terracotta" />
+                                  <span>Direct Patronage Transparency</span>
+                                </div>
+                                <div className="text-xs text-stone-700 space-y-1">
+                                  <div className="flex justify-between">
+                                    <span>Direct Artisan Share (92%):</span>
+                                    <span className="font-bold">{formatPrice(Math.round(cartSubtotalINR * 0.92))}</span>
+                                  </div>
+                                  <div className="flex justify-between text-stone-500 text-[11px]">
+                                    <span>Eco Packaging & Platform (8%):</span>
+                                    <span>{formatPrice(Math.round(cartSubtotalINR * 0.08))}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Step 2: Shipping Details Form */}
+                      {checkoutStep === 'checkout' && (
+                        <form onSubmit={(e) => { e.preventDefault(); setCheckoutStep('success'); }} className="space-y-4 text-xs">
+                          <h3 className="font-serif text-lg font-bold text-stone-900">Delivery & Patron Information</h3>
+                          <div>
+                            <label className="block font-semibold text-stone-700 mb-1">Full Name</label>
+                            <input required value={buyerInfo.name} onChange={e => setBuyerInfo({...buyerInfo, name: e.target.value})} placeholder="Aditi Sharma" className="w-full px-3 py-2 border rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-stone-700 mb-1">Email Address</label>
+                            <input required type="email" value={buyerInfo.email} onChange={e => setBuyerInfo({...buyerInfo, email: e.target.value})} placeholder="aditi@example.com" className="w-full px-3 py-2 border rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-stone-700 mb-1">Shipping Address</label>
+                            <textarea required value={buyerInfo.address} onChange={e => setBuyerInfo({...buyerInfo, address: e.target.value})} rows="2" placeholder="Street, City, Postal Code" className="w-full px-3 py-2 border rounded-xl"></textarea>
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-stone-700 mb-1">Personal Note for Artisan (Optional)</label>
+                            <input value={buyerInfo.note} onChange={e => setBuyerInfo({...buyerInfo, note: e.target.value})} placeholder="e.g. Please sign the back with love for my new home!" className="w-full px-3 py-2 border rounded-xl" />
+                          </div>
+                          <div className="p-3 bg-stone-100 rounded-xl space-y-1">
+                            <div className="flex justify-between font-bold text-stone-900">
+                              <span>Total Investment:</span>
+                              <span className="text-terracotta">{formatPrice(cartSubtotalINR)}</span>
+                            </div>
+                            <p className="text-[10px] text-stone-500">Includes museum-grade insured shipping & physical Certificate of Authenticity.</p>
+                          </div>
+                          <button type="submit" className="w-full py-3 bg-stone-900 text-white rounded-xl font-bold hover:bg-terracotta transition-colors">
+                            Complete Acquisition Payment
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Step 3: Success Confirmation */}
+                      {checkoutStep === 'success' && (
+                        <div className="text-center py-8 space-y-4">
+                          <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                            <IconCheck className="w-8 h-8" />
+                          </div>
+                          <h3 className="font-serif text-2xl font-bold text-stone-900">Acquisition Complete!</h3>
+                          <p className="text-xs text-stone-600 leading-relaxed">
+                            Thank you, <strong>{buyerInfo.name || 'Patron'}</strong>. Your patronage has been transferred directly to our master creators.
+                          </p>
+                          <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-left text-xs space-y-2">
+                            <div className="flex justify-between border-b pb-2">
+                              <span className="text-stone-500">Order Reference:</span>
+                              <span className="font-mono font-bold text-stone-800">#AURA-{Math.floor(100000 + Math.random() * 900000)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-stone-500">Artisan Payout:</span>
+                              <span className="font-bold text-emerald-700">{formatPrice(Math.round(cartSubtotalINR * 0.92))}</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              setCart([]);
+                              setCheckoutStep('cart');
+                              setIsCartOpen(false);
+                            }} 
+                            className="w-full py-3 bg-stone-900 text-white rounded-xl font-semibold text-xs"
+                          >
+                            Return to Gallery
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Drawer Footer Checkout Button */}
+                    {cart.length > 0 && checkoutStep === 'cart' && (
+                      <div className="p-6 border-t border-stone-200 space-y-3 bg-stone-50">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-xs text-stone-500 font-semibold uppercase">Subtotal</span>
+                          <span className="font-serif text-2xl font-bold text-stone-900">{formatPrice(cartSubtotalINR)}</span>
+                        </div>
+                        <button 
+                          onClick={() => setCheckoutStep('checkout')}
+                          className="w-full py-3.5 bg-stone-900 hover:bg-terracotta text-amber-50 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md"
+                        >
+                          Proceed to Checkout
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- GLOBAL TOAST NOTIFICATION --- */}
+            {toastMessage && (
+              <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-amber-100 px-5 py-3 rounded-2xl shadow-2xl border border-terracotta/40 flex items-center space-x-3 text-xs animate-bounce">
+                <IconSparkles className="w-4 h-4 text-terracotta" />
+                <span>{toastMessage}</span>
+              </div>
+            )}
+
+            {/* --- FOOTER --- */}
+            <footer className="bg-stone-950 text-stone-400 py-16 border-t border-stone-800 mt-auto">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 text-stone-900 font-serif font-bold flex items-center justify-center text-sm">A</div>
+                    <span className="font-serif text-xl font-bold text-amber-50">AURA ARTISAN</span>
+                  </div>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    A curated luxury marketplace connecting independent fine artists, portrait painters, and traditional handicraft masters directly with global collectors.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-serif text-sm font-bold text-stone-200 uppercase tracking-wider mb-3">Categories</h4>
+                  <ul className="space-y-2 text-xs">
+                    <li><a href="#" onClick={() => setSelectedCategory('paintings')} className="hover:text-amber-300">Fine Oil & Tempera Paintings</a></li>
+                    <li><a href="#" onClick={() => setSelectedCategory('portraits')} className="hover:text-amber-300">Custom Family Portraits</a></li>
+                    <li><a href="#" onClick={() => setSelectedCategory('sculptures')} className="hover:text-amber-300">Terracotta & Bronze Sculptures</a></li>
+                    <li><a href="#" onClick={() => setSelectedCategory('textiles')} className="hover:text-amber-300">Handwoven Silk Tapestries</a></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-serif text-sm font-bold text-stone-200 uppercase tracking-wider mb-3">Artisan Collective</h4>
+                  <ul className="space-y-2 text-xs">
+                    <li><button onClick={() => setIsSellModalOpen(true)} className="hover:text-amber-300">List Your Artwork</button></li>
+                    <li><a href="#" onClick={() => setIsCommissionModalOpen(true)} className="hover:text-amber-300">Commission Custom Piece</a></li>
+                    <li><a href="#" className="hover:text-amber-300">Fair-Trade Guarantee</a></li>
+                    <li><a href="#" className="hover:text-amber-300">Certificate of Authenticity</a></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-serif text-sm font-bold text-stone-200 uppercase tracking-wider">Artisan Patron Newsletter</h4>
+                  <p className="text-xs text-stone-400">Receive private preview invitations for limited heritage art drops.</p>
+                  <div className="flex">
+                    <input type="email" placeholder="Enter your email" className="bg-stone-900 border border-stone-700 text-stone-200 px-3 py-2 rounded-l-xl text-xs focus:outline-none w-full" />
+                    <button className="bg-terracotta text-white px-4 py-2 rounded-r-xl text-xs font-semibold hover:bg-terracotta-dark">Subscribe</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-stone-900 text-center text-[11px] text-stone-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <span>© {new Date().getFullYear()} AURA ARTISAN Marketplace. All rights reserved. Preserving heritage crafts worldwide.</span>
+                <div className="flex space-x-4">
+                  <a href="#" className="hover:text-stone-300">Privacy Policy</a>
+                  <a href="#" className="hover:text-stone-300">Terms of Patronage</a>
+                  <a href="#" className="hover:text-stone-300">Authenticity Guarantee</a>
+                </div>
+              </div>
+            </footer>
+
+          </div>
+        );
+      }
+
+      // Render App
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+</body>
+</html>
