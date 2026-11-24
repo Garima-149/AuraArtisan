@@ -387,8 +387,23 @@
         const [isCartOpen, setIsCartOpen] = useState(false);
         const [isSellModalOpen, setIsSellModalOpen] = useState(false);
         const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+        const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
         const [commissionArtist, setCommissionArtist] = useState(null);
         const [toastMessage, setToastMessage] = useState(null);
+
+        // Keyboard shortcut (Cmd+K / Ctrl+K) for Global Search Simulation
+        useEffect(() => {
+          const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              setIsSearchModalOpen(prev => !prev);
+            } else if (e.key === 'Escape') {
+              setIsSearchModalOpen(false);
+            }
+          };
+          window.addEventListener('keydown', handleKeyDown);
+          return () => window.removeEventListener('keydown', handleKeyDown);
+        }, []);
         
         // Checkout flow state inside Cart drawer
         const [checkoutStep, setCheckoutStep] = useState('cart'); // 'cart', 'checkout', 'success'
@@ -558,8 +573,21 @@
                 </nav>
 
                 {/* Right Action Icons & Buttons */}
-                <div className="flex items-center space-x-4 sm:space-x-6">
+                <div className="flex items-center space-x-3 sm:space-x-5">
                   
+                  {/* Global Search Trigger Button */}
+                  <button
+                    onClick={() => setIsSearchModalOpen(true)}
+                    className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-stone-200/70 hover:bg-stone-200 text-stone-700 text-xs transition-all border border-stone-300/60"
+                    aria-label="Search Gallery"
+                  >
+                    <IconSearch className="w-4 h-4 text-terracotta" />
+                    <span className="hidden md:inline text-stone-500 pr-2">Search art, artisans...</span>
+                    <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-stone-500 bg-white rounded border border-stone-300">
+                      ⌘K
+                    </kbd>
+                  </button>
+
                   {/* Currency Switcher */}
                   <div className="flex items-center bg-stone-200/60 p-1 rounded-full text-xs font-semibold text-stone-700">
                     <button 
@@ -1451,6 +1479,126 @@
               <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-amber-100 px-5 py-3 rounded-2xl shadow-2xl border border-terracotta/40 flex items-center space-x-3 text-xs animate-bounce">
                 <IconSparkles className="w-4 h-4 text-terracotta" />
                 <span>{toastMessage}</span>
+              </div>
+            )}
+
+            {/* --- INTERACTIVE GLOBAL SEARCH SIMULATION MODAL --- */}
+            {isSearchModalOpen && (
+              <div 
+                className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-stone-900/70 backdrop-blur-sm animate-fade-in"
+                onClick={() => setIsSearchModalOpen(false)}
+              >
+                <div 
+                  className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-stone-200 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Search Input Header */}
+                  <div className="p-4 sm:p-5 border-b border-stone-200 flex items-center space-x-3 bg-stone-50">
+                    <IconSearch className="w-5 h-5 text-terracotta flex-shrink-0" />
+                    <input
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by painting title, artisan name, region, or craft medium..."
+                      className="w-full bg-transparent text-sm sm:text-base text-stone-900 placeholder-stone-400 focus:outline-none"
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery('')}
+                        className="text-xs text-stone-400 hover:text-stone-700 px-2 py-1"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setIsSearchModalOpen(false)}
+                      className="p-1.5 rounded-full bg-stone-200/70 hover:bg-stone-900 hover:text-white text-stone-600 transition-colors"
+                    >
+                      <IconX className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Quick Suggested Search Tags */}
+                  <div className="px-5 py-3 bg-stone-100/60 border-b border-stone-200/70 flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 mr-1">Popular:</span>
+                    {['Gold Leaf', 'Varanasi', 'Portrait', 'Bronze', 'Indigo', 'Jaipur', 'Terracotta'].map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => setSearchQuery(tag)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                          searchQuery.toLowerCase() === tag.toLowerCase()
+                            ? 'bg-terracotta text-white'
+                            : 'bg-white border border-stone-200 text-stone-700 hover:border-terracotta hover:text-terracotta'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Instant Live Search Results */}
+                  <div className="max-h-96 overflow-y-auto p-4 sm:p-5 space-y-3">
+                    <div className="flex justify-between items-center text-[11px] font-semibold uppercase tracking-wider text-stone-400 px-1">
+                      <span>{searchQuery ? `Matching Masterpieces (${filteredArtworks.length})` : 'Curated Discovery'}</span>
+                      <button
+                        onClick={() => {
+                          setIsSearchModalOpen(false);
+                          document.getElementById('marketplace-grid')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="text-terracotta hover:underline"
+                      >
+                        View all in gallery →
+                      </button>
+                    </div>
+
+                    {filteredArtworks.length === 0 ? (
+                      <div className="text-center py-10 space-y-2">
+                        <p className="font-serif text-xl text-stone-800">No artworks found for "{searchQuery}"</p>
+                        <p className="text-xs text-stone-500">Try searching for "Oil", "Portrait", "Silk", or an artisan's city.</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-stone-100">
+                        {filteredArtworks.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              setIsSearchModalOpen(false);
+                              setSelectedArtwork(item);
+                            }}
+                            className="py-3 px-2 flex items-center justify-between hover:bg-stone-50 rounded-xl cursor-pointer transition-colors group"
+                          >
+                            <div className="flex items-center space-x-3.5 min-w-0">
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
+                                <ArtworkCanvasVisual styleType={item.artStyle} className="w-full h-full" />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="font-serif text-base font-bold text-stone-900 group-hover:text-terracotta transition-colors truncate">
+                                  {item.title}
+                                </h4>
+                                <p className="text-xs text-stone-500 truncate">
+                                  {item.artist} • <span className="text-stone-400">{item.location}</span>
+                                </p>
+                                <span className="inline-block mt-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-stone-100 text-stone-600 font-medium">
+                                  {item.medium}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="text-right pl-3 flex-shrink-0">
+                              <span className="font-serif text-base font-bold text-stone-900 block">
+                                {formatPrice(item.priceINR)}
+                              </span>
+                              <span className="text-[11px] text-terracotta font-medium group-hover:underline">
+                                Inspect →
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
